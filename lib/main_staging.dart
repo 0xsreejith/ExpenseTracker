@@ -1,0 +1,18 @@
+import 'package:flutter/material.dart';
+import 'package:expense_tracker/app/app.dart';
+import 'package:expense_tracker/app/di/injection_container.dart' as di;
+import 'package:expense_tracker/core/constants/app_config.dart';
+
+Future<void> main() async {
+  WidgetsFlutterBinding.ensureInitialized();
+
+  final config = AppConfig(
+    environment: AppEnvironment.staging,
+    appTitle: 'Expense Tracker [STG]',
+    databaseName: 'expense_tracker_stg',
+  );
+
+  await di.init(config);
+
+  runApp(const MyApp());
+}

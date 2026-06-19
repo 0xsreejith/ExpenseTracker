@@ -1,30 +1,53 @@
-// This is a basic Flutter widget test.
-//
-// To perform an interaction with a widget in your test, use the WidgetTester
-// utility in the flutter_test package. For example, you can send tap and scroll
-// gestures. You can also use WidgetTester to find child widgets in the widget
-// tree, read text, and verify that the values of widget properties are correct.
-
-import 'package:flutter/material.dart';
 import 'package:flutter_test/flutter_test.dart';
+import 'package:mocktail/mocktail.dart';
+import 'package:expense_tracker/app/app.dart';
+import 'package:expense_tracker/app/di/injection_container.dart';
+import 'package:expense_tracker/core/constants/app_config.dart';
+import 'package:expense_tracker/core/logging/logger_service.dart';
+import 'package:expense_tracker/features/expenses/presentation/controllers/expense_controller.dart';
 
-import 'package:expense_tracker/main.dart';
+class MockExpenseController extends Mock implements ExpenseController {}
+class MockLoggerService extends Mock implements LoggerService {}
 
 void main() {
-  testWidgets('Counter increments smoke test', (WidgetTester tester) async {
-    // Build our app and trigger a frame.
+  late MockExpenseController mockController;
+
+  setUpAll(() {
+    final config = AppConfig(
+      environment: AppEnvironment.dev,
+      appTitle: 'Expense Tracker [TEST]',
+      databaseName: 'test',
+    );
+    if (!sl.isRegistered<AppConfig>()) {
+      sl.registerSingleton<AppConfig>(config);
+    }
+    if (!sl.isRegistered<LoggerService>()) {
+      sl.registerSingleton<LoggerService>(MockLoggerService());
+    }
+  });
+
+  setUp(() {
+    mockController = MockExpenseController();
+
+    when(() => mockController.isLoading).thenReturn(false);
+    when(() => mockController.allExpenses).thenReturn([]);
+    when(() => mockController.calculateMonthlySummary()).thenReturn(List.filled(12, 0.0));
+    when(() => mockController.getStartMonth()).thenReturn(1);
+    when(() => mockController.getCurrentMonthTotal()).thenReturn(0.0);
+    when(() => mockController.getTotalExpenses()).thenReturn(0.0);
+    when(() => mockController.fetchExpenses()).thenAnswer((_) async => {});
+
+    if (sl.isRegistered<ExpenseController>()) {
+      sl.unregister<ExpenseController>();
+    }
+    sl.registerFactory<ExpenseController>(() => mockController);
+  });
+
+  testWidgets('Smoke test - Verify HomeScreen displays and compiles', (WidgetTester tester) async {
     await tester.pumpWidget(const MyApp());
-
-    // Verify that our counter starts at 0.
-    expect(find.text('0'), findsOneWidget);
-    expect(find.text('1'), findsNothing);
-
-    // Tap the '+' icon and trigger a frame.
-    await tester.tap(find.byIcon(Icons.add));
     await tester.pump();
 
-    // Verify that our counter has incremented.
-    expect(find.text('0'), findsNothing);
-    expect(find.text('1'), findsOneWidget);
+    expect(find.text('Expense Tracker'), findsOneWidget);
+    expect(find.text('No expenses added yet'), findsOneWidget);
   });
 }
