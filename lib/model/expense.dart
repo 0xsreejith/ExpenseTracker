@@ -6,7 +6,7 @@ part 'expense.g.dart';
 class Expense{
   Id id = Isar.autoIncrement;
   final String name;
-  final String amount;
+  final double amount;
   final DateTime date;
-  Expense({required this.amount,required this.name,required this.date,required this.id});
+  Expense({required this.amount,required this.name,required this.date});
 }

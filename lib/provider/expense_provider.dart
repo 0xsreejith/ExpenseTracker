@@ -27,6 +27,7 @@ Future<void> createExpense(Expense expense) async {
   await isar.writeTxn(() async {
     await isar.expenses.put(expense);
   });
+  print("ADDED EXPENSE TO DB");
   // ADD TO LOCAL LIST
   _allExpenses.add(expense);
   // NOTIFY LISTENERS THAT DATA HAS CHANGED UPON ADDITION
